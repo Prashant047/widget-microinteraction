@@ -1,113 +1,181 @@
-import Image from 'next/image'
+'use client'
+
+import { motion } from 'framer-motion';
+import { useState, useRef, useEffect } from 'react';
+import { X, ArrowUp, Share, BarChart2, Settings, Feather } from 'lucide-react';
+import * as d3 from 'd3';
+
+// function calculateValue(x:number) {
+//   return 3 - Math.exp((-x + 2.2) / 1);
+// }
+
+const NUM_VALUES = 200;
+const data = [...Array(NUM_VALUES)].map((_, i) => ({x: i, y:Math.random()*2 + i/30}));
+
+
+function Graph (){
+  const ref = useRef<SVGSVGElement>(null);
+  const HEIGHT = 80;
+  const WIDTH = 270;
+  const PADDING = 20;
+
+  useEffect(() => {
+    const svg = d3.select(ref.current)
+      .attr('width', WIDTH + PADDING*2)
+      .attr('height', HEIGHT + PADDING*2)
+      .append('g')
+      .attr('transform', `translate(${PADDING}, ${PADDING})`);
+
+    const xScale = d3.scaleLinear()
+      .domain([0, NUM_VALUES])
+      .range([0, WIDTH]);
+
+    const yScale = d3.scaleLinear()
+      .domain([0, 10])
+      .range([HEIGHT, 0]);
+    
+    svg.append('line')
+      .attr('x1', xScale(0))
+      .attr('y1', yScale(5))
+      .attr('x2', xScale(200))
+      .attr('y2', yScale(5))
+      .attr('fill', 'none')
+      .attr('storke-width', 1)
+      .attr('stroke', '#525252');
+
+    svg.append('path')
+      .datum(data)
+      .attr('fill', 'none')
+      .attr('stroke', '#fde68a')
+      .attr('stroke-width', 0.5)
+      //@ts-ignore
+      .attr('d', d3.line().x((d) => xScale(d.x)).y((d) => yScale(d.y)));
+    
+    // X axis
+    const xAxisGenerator = d3.axisBottom(xScale);
+    xAxisGenerator.tickSize(0);
+
+    const xAxis = svg.append('g')
+      .attr('transform', `translate(0, ${HEIGHT})`)
+      .call(xAxisGenerator);
+    xAxis.select('.domain').remove();
+    xAxis.selectAll('.tick text')
+      .attr('color', '#525252')
+      
+    svg.append('text')
+      .attr('x', xScale(0))
+      .attr('y', yScale(9 + 0.5))
+      .attr('fill', 'white')
+      .attr('font-size', '0.6rem')
+      .text(`$`);
+
+    svg.append('text')
+      .attr('x', xScale(3))
+      .attr('y', yScale(9))
+      .attr('fill', 'white')
+      .attr('font-size', '1rem')
+      .text(`${11.03}`);
+      
+    
+    // svg.append('g')
+    //   .call(d3.axisLeft(yScale));
+
+  },[]);
+
+  return (
+    <div className='bg-neutral-800/80'>
+      <svg
+        ref={ref}
+      ></svg>
+    </div>
+  );
+}
 
 export default function Home() {
+  const [expanded, setExpanded] = useState(false);
+  const SQUARE_WIDTH = 40;
+  const PADDING = 10;
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <section className="h-screen flex items-center justify-center mx-auto py-10" onClick={() => setExpanded(prev => !prev)}>
+      <motion.div 
+        animate={{height:expanded?'308px':`${PADDING*2 + SQUARE_WIDTH}px`}}
+        style={{height:`${PADDING*2 + SQUARE_WIDTH}px`}}
+        className="bg-neutral-900 w-[310px] border border-neutral-700 rounded-lg overflow-hidden"
+      >
+        <div style={{padding: `${PADDING}px`}} className={`flex gap-2 ${expanded?'flex-row-reverse':''}`}>
+          <motion.div 
+            layout
+            style={{height: `${SQUARE_WIDTH}px`, width: `${SQUARE_WIDTH}px`}}
+            className="bg-red-500 p-1 rounded-lg flex flex-col justify-between h-full"
           >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+            <div className='flex items-center justify-between'>
+              <div className='h-2 w-2 bg-neutral-100 rounded-full'></div>
+              <small className='text-[0.4rem] text-green-500 font-bold'>+4.57</small>
+            </div>
+            <span className='text-[0.6rem] font-bold'>$11.03</span>
+          </motion.div>
+          <motion.div layout className='relative flex-1'>
+            <motion.div animate={{opacity:expanded?0:1}} className=' flex justify-between items-center'>
+              <div className='flex flex-col'>
+                <div className='flex gap-2'>
+                  <h1>$8,993.46</h1>
+                  <small className='flex items-center text-[0.5rem] text-green-300 gap-1'>
+                    <span><ArrowUp size={11}/></span>
+                    <span>$4,496.50</span> 
+                  </small>
+                </div>
+                <small className='text-neutral-500'>Avax/Usdt</small>
+              </div>
+              <div className='flex gap-2 text-neutral-500'>
+                <BarChart2 size={17}/>
+                <Settings size={17}/>
+              </div>
+            </motion.div>
+            <motion.div  initial={{opacity:0}} animate={{opacity:expanded?1:0}} className='absolute flex flex-col items-start justify-between top-0 left-0 h-full'>
+              <small className='inline-flex border border-neutral-600 text-[0.45rem] rounded-sm leading-none p-[.2rem]'>12X</small>
+              <div className='flex items-center'>
+                <span className='inline-flex items-center justify-center h-3 w-3 rounded-full bg-red-500 text-[0.5rem] font-bold'>A</span>
+                <span className='inline-flex items-center justify-center h-3 w-3 rounded-full bg-cyan-500 text-[0.5rem] font-bold -translate-x-1'>T</span>
+                <span className='text-[0.55rem]'>AVAX/USDT</span>
+              </div>
+            </motion.div>
+          </motion.div>
         </div>
-      </div>
-
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
+        <motion.div 
+          animate={{opacity:expanded?1:0}}
+          className=''
         >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
+          <div className='px-3 mb-3'>
+            <h2 className='text-neutral-400'>Unrealized PNL</h2>
+            <h2 className='text-neutral-100 font-bold'>8933.46 USDT</h2>
+            
+            <div className='flex justify-between text-xs my-3'>
+              <small className='flex items-center text-green-300 gap-1'>
+                <span><ArrowUp size={12}/></span>
+                <span>$4,496.50</span> 
+                <span className='ml-3'>54.83%</span>
+              </small>
+              <small className='text-neutral-400'>RISK: 2.64%</small>
+            </div>
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
+            <div className='flex gap-2'>
+              <button className='font-bold flex items-center gap-2 px-3 py-1 rounded-full text-neutral-800 bg-neutral-100 text-xs'>
+                <span><X size={15}/></span>
+                <span>
+                  Close position
+                </span>
+              </button>
+              <button className='flex items-center gap-2 px-3 py-1 rounded-full text-neutral-400 bg-neutral-800 text-xs'>
+                <span>Profit/Loss</span>
+              </button>
+              <button className='flex items-center gap-2 px-2 p-1 rounded-full text-neutral-400 bg-neutral-800 text-xs'>
+                <span><Share size={13}/></span>
+              </button>
+            </div>
+          </div>
+          <Graph/>
+        </motion.div>
+      </motion.div>
+    </section>
+  );
 }
