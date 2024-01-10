@@ -1,105 +1,22 @@
 'use client'
 
 import { motion } from 'framer-motion';
-import { useState, useRef, useEffect } from 'react';
-import { X, ArrowUp, Share, BarChart2, Settings, Feather } from 'lucide-react';
-import * as d3 from 'd3';
-
-// function calculateValue(x:number) {
-//   return 3 - Math.exp((-x + 2.2) / 1);
-// }
-
-const NUM_VALUES = 200;
-const data = [...Array(NUM_VALUES)].map((_, i) => ({x: i, y:Math.random()*2 + i/30}));
-
-
-function Graph (){
-  const ref = useRef<SVGSVGElement>(null);
-  const HEIGHT = 80;
-  const WIDTH = 270;
-  const PADDING = 20;
-
-  useEffect(() => {
-    const svg = d3.select(ref.current)
-      .attr('width', WIDTH + PADDING*2)
-      .attr('height', HEIGHT + PADDING*2)
-      .append('g')
-      .attr('transform', `translate(${PADDING}, ${PADDING})`);
-
-    const xScale = d3.scaleLinear()
-      .domain([0, NUM_VALUES])
-      .range([0, WIDTH]);
-
-    const yScale = d3.scaleLinear()
-      .domain([0, 10])
-      .range([HEIGHT, 0]);
-    
-    svg.append('line')
-      .attr('x1', xScale(0))
-      .attr('y1', yScale(5))
-      .attr('x2', xScale(200))
-      .attr('y2', yScale(5))
-      .attr('fill', 'none')
-      .attr('storke-width', 1)
-      .attr('stroke', '#525252');
-
-    svg.append('path')
-      .datum(data)
-      .attr('fill', 'none')
-      .attr('stroke', '#fde68a')
-      .attr('stroke-width', 0.5)
-      //@ts-ignore
-      .attr('d', d3.line().x((d) => xScale(d.x)).y((d) => yScale(d.y)));
-    
-    // X axis
-    const xAxisGenerator = d3.axisBottom(xScale);
-    xAxisGenerator.tickSize(0);
-
-    const xAxis = svg.append('g')
-      .attr('transform', `translate(0, ${HEIGHT})`)
-      .call(xAxisGenerator);
-    xAxis.select('.domain').remove();
-    xAxis.selectAll('.tick text')
-      .attr('color', '#525252')
-      
-    svg.append('text')
-      .attr('x', xScale(0))
-      .attr('y', yScale(9 + 0.5))
-      .attr('fill', 'white')
-      .attr('font-size', '0.6rem')
-      .text(`$`);
-
-    svg.append('text')
-      .attr('x', xScale(3))
-      .attr('y', yScale(9))
-      .attr('fill', 'white')
-      .attr('font-size', '1rem')
-      .text(`${11.03}`);
-      
-    
-    // svg.append('g')
-    //   .call(d3.axisLeft(yScale));
-
-  },[]);
-
-  return (
-    <div className='bg-neutral-800/80'>
-      <svg
-        ref={ref}
-      ></svg>
-    </div>
-  );
-}
+import { useState } from 'react';
+import { X, ArrowUp, Share, BarChart2, Settings } from 'lucide-react';
+import Graph from './Graph';
 
 export default function Home() {
   const [expanded, setExpanded] = useState(false);
   const SQUARE_WIDTH = 40;
   const PADDING = 10;
+
   return (
-    <section className="h-screen flex items-center justify-center mx-auto py-10" onClick={() => setExpanded(prev => !prev)}>
+    <section className="h-screen flex flex-col items-center justify-center mx-auto py-10" >
+      <h2 className='text-sm text-neutral-400 my-10'>click on <b>widget</b> to toggle expanded view</h2>
       <motion.div 
         animate={{height:expanded?'308px':`${PADDING*2 + SQUARE_WIDTH}px`}}
         style={{height:`${PADDING*2 + SQUARE_WIDTH}px`}}
+        onClick={() => setExpanded(prev => !prev)}
         className="bg-neutral-900 w-[310px] border border-neutral-700 rounded-lg overflow-hidden"
       >
         <div style={{padding: `${PADDING}px`}} className={`flex gap-2 ${expanded?'flex-row-reverse':''}`}>
@@ -173,7 +90,7 @@ export default function Home() {
               </button>
             </div>
           </div>
-          <Graph/>
+          <Graph expanded={expanded}/>
         </motion.div>
       </motion.div>
     </section>
